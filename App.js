@@ -5,7 +5,7 @@ import { List, ListItem, SearchBar } from "react-native-elements";
 
 console.disableYellowBox = true
 
-var socialNetworkJs = 'function getPosts(){for(var e=[],t=document.querySelectorAll(".story_body_container"),r=0;r<t.length;r++){var n=t[r],o=getPoster(n),l=n.childNodes[1].innerText;e.push({key:n.parentElement.id,poster:o,raw_text:l})}return e}function getPoster(e){var t=e.querySelector("i").getAttribute("style").split("\'")[1];return t=(t=(t=t.replaceAll("\\\\3a ",":")).replaceAll("\\\\3d ","=")).replaceAll("\\\\26 ","&"),{name:e.querySelector("strong").innerText,picture_url:t}}function getRecipient(e){for(var t={},r=e.querySelector("span").querySelectorAll("a"),n=0;n<r.length;n++){var o=r[n];if(n==r.length-1){var l=o.getAttribute("href");if(l.startsWith("/groups/")){t={type:"group",name:o.innerText,url:l};break}}}return t}function getLike(e){return getFooterItem(e,"Like")}function getComment(e){return getFooterItem(e,"Comment")}function getFooterItem(e,t){for(var r={},n=e.querySelectorAll("a"),o=0;o<n.length;o++){var l=n[o];if(l.innerText.includes(t)){r={id:l.getAttribute("id")};break}}return r}String.prototype.replaceAll=function(e,t){return this.split(e).join(t)};'
+var socialNetworkJs = 'function getPosts(){for(var e=[],t=document.querySelectorAll(".story_body_container"),r=0;r<t.length;r++){var n=t[r],l=getPoster(n),i=getTime(n),o=getRecipient(n),u=n.parentElement.querySelector("footer"),a=getReactions(u),c=getCommentCount(u),g=getLike(u),s=getComment(u),f=n.childNodes[1].innerText;e.push({key:n.parentElement.id,poster:l,time:i,recipient:o,rawText:f,reactions:a,commentCount:c,like:g,comment:s})}return e}function getPoster(e){var t=e.querySelector("i").getAttribute("style").split("\'")[1];return t=(t=(t=t.replaceAll("\\\\3a ",":")).replaceAll("\\\\3d ","=")).replaceAll("\\\\26 ","&"),{name:e.querySelector("strong").innerText,pictureUrl:t}}function getTime(e){var t=e.querySelector("abbr");return t?t.innerText:null}function getRecipient(e){var t=e.querySelector("span");if(!t)return null;for(var r=t.querySelectorAll("a"),n=0;n<r.length;n++){var l=r[n];if(n==r.length-1){var i=l.getAttribute("href");if(i.startsWith("/groups/"))return{type:"group",name:l.innerText,url:i}}}return null}function getReactions(e){if(!e)return null;var t=getReactionBar(e);if(!t)return null;var r=t.querySelector("[data-sigil=reactions-sentence-container]");if(!r)return null;for(var n=[],l=r.querySelectorAll("u"),i=0;i<l.length;i++){var o=l[i];n.push(o.textContent)}var u=r.children[r.children.length-1];return u?{types:n,count:parseInt(u.textContent)}:null}function getCommentCount(e){if(!e)return null;var t=getReactionBar(e);if(!t)return null;var r=t.children[t.children.length-1];return r?parseInt(r.textContent):null}function getReactionBar(e){return e.querySelector("[data-sigil=reactions-bling-bar]")}function getLike(e){return getFooterItem(e,"Like")}function getComment(e){return getFooterItem(e,"Comment")}function getFooterItem(e,t){if(!e)return null;for(var r={},n=e.querySelectorAll("a"),l=0;l<n.length;l++){var i=n[l];if(i.innerText.includes(t)){r={id:i.getAttribute("id")};break}}return r}function onFeedChange(e){new MutationObserver(e).observe(document.querySelector("#MNewsFeed"),{childList:!0})}String.prototype.replaceAll=function(e,t){return this.split(e).join(t)};'
 var watchJs = 'var observer=new MutationObserver(function(e){window.postMessage("reload")});observer.observe(document.querySelector("#MNewsFeed"),{childList:!0});'
 
 class Controller {
@@ -64,10 +64,6 @@ class Real extends Component {
     controller.setSetDataFunction(this.setData);
   }
 
-  componentDidMount() {
-    //this.makeRemoteRequest();
-  }
-
   setData = (data) => {
     this.setState({
       data: data,
@@ -117,23 +113,48 @@ class Real extends Component {
       <List containerStyle={{ borderTopWidth: 0, borderBottomWidth: 0 }}>
         <FlatList
           data={this.state.data}
-          renderItem={({ item }) => (
-            <View style={{flex: 1, flexDirection: 'column'}}>
-              <ListItem
-                roundAvatar
-                title={`${item.poster.name}`}
-                avatar={{ uri: item.poster.picture_url }}
-                containerStyle={{ borderBottomWidth: 0 }}
-                hideChevron={true}
-              />
-              <Text>{item.raw_text}</Text>
-              <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-around'}}>
-                <Button title="Like"/>
-                <Button title="Comment"/>
-                <Button title="Share"/>
+          renderItem={({ item }) => {
+            const reactions = item.reactions ? (
+              <Text>{item.reactions.count} Reactions</Text>
+            ) : (
+              <Text></Text>
+            )
+            const comments = item.commentCount ? (
+              <Text>{item.commentCount} Comments</Text>
+            ) : (
+              <Text></Text>
+            )
+            var title = item.poster.name
+            if (item.recipient) {
+              title += ' ▶ ' + item.recipient.name
+            }
+            var subtitle = ''
+            if (item.time) {
+              subtitle = item.time
+            }
+            return (
+              <View style={{flex: 1, flexDirection: 'column'}}>
+                <ListItem
+                  roundAvatar
+                  title={`${title}`}
+                  subtitle={`${subtitle}`}
+                  avatar={{ uri: item.poster.pictureUrl }}
+                  containerStyle={{ borderBottomWidth: 0 }}
+                  hideChevron={true}
+                />
+                <Text>{item.rawText}</Text>
+                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between'}}>
+                  {reactions}
+                  {comments}
+                </View>
+                <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-around'}}>
+                  <Button title="Like"/>
+                  <Button title="Comment"/>
+                  <Button title="Share"/>
+                </View>
               </View>
-            </View>
-          )}
+            )
+          }}
           keyExtractor={item => item.key}
           ItemSeparatorComponent={this.renderSeparator}
           ListHeaderComponent={this.renderHeader}
@@ -168,11 +189,14 @@ class Web extends Component {
   constructor(props) {
     super(props);
     this.onLoad = this.onLoad.bind(this);
-    //this.onMessage = this.onMessage.bind(this);
+    this.onMessage = this.onMessage.bind(this);
 
-    /*controller.setLoadMoreFunction(() => {
+    controller.setReloadFunction(() => {
+      this.onLoad()
+    })
+    controller.setLoadMoreFunction(() => {
       this.webview.injectJavaScript('window.scrollTo(0,document.body.scrollHeight)')
-    })*/
+    })
   }
   onLoad() {
     this.webview.injectJavaScript(socialNetworkJs)
@@ -200,7 +224,6 @@ class Web extends Component {
           ref={ref => (this.webview = ref)}
           source={{ uri: 'https://m.facebook.com/' }}
           onLoad={this.onLoad}
-          //onNavigationStateChange={this.onLoad}
           onError={console.error.bind(console, 'error')}
           bounces={false}
           onShouldStartLoadWithRequest={() => true}
