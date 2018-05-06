@@ -238,7 +238,12 @@ class Web extends Component {
   }
 }
 
-export default TabNavigator({
-  Timeline: { screen: Real },
-  Web: { screen: Web },
-});
+export default TabNavigator(
+  {
+    Timeline: { screen: Real },
+    Web: { screen: Web },
+  },
+  {
+    lazy: false,
+  }
+);
