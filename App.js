@@ -48,7 +48,7 @@ class Controller {
 
 var controller = new Controller();
 
-class Real extends Component {
+class Feed extends Component {
   constructor(props) {
     super(props);
 
@@ -238,12 +238,39 @@ class Web extends Component {
   }
 }
 
+class NotificationScreen extends React.Component {
+  render() {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Notifications</Text>
+      </View>
+    );
+  }
+}
+
+const InnerTab = TabNavigator(
+  {
+    Timeline: { screen: Feed },
+    Details: { screen: DetailsScreen },
+  },
+  {
+    lazy: false,
+  }
+);
+
+// TODO: tab for main feed, notifications, and self profile
+// A stack navigator with web views might be able to handle the facebook stack
+// TODO: add a debug variable to show outer tab
 export default TabNavigator(
   {
-    Timeline: { screen: Real },
+    Inner: { screen: InnerTab },
     Web: { screen: Web },
   },
   {
     lazy: false,
+    swipeEnabled: false,
+    navigationOptions: {
+      tabBarVisible: false
+    }
   }
 );
