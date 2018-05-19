@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { AppRegistry, WebView, FlatList, StyleSheet, Text, View, ActivityIndicator, Button, Image } from 'react-native';
-import { TabNavigator } from 'react-navigation';
+import { TabNavigator, StackNavigator } from 'react-navigation';
 import { List, ListItem, SearchBar } from "react-native-elements";
 
 console.disableYellowBox = true
@@ -108,9 +108,32 @@ class Real extends Component {
     );
   }
 
+  onPressNextPage = () => {
+    this.props.navigation.navigate('Real', { url: 'x' })
+  }
+
+  onPrint = () => {
+    console.log(this.props.navigation)
+  }
+
+  getIndex = () => {
+    if (this.props.navigation.index) {
+      return this.props.navigation.index
+    }
+    return 0
+  }
+
   render() {
     return (
       <List containerStyle={{ borderTopWidth: 0, borderBottomWidth: 0 }}>
+        <Button
+          onPress={this.onPrint}
+          title="Print"
+        />
+        <Button
+          onPress={this.onPressNextPage}
+          title="Next Page"
+        />
         <FlatList
           data={this.state.data}
           renderItem={({ item }) => {
@@ -238,10 +261,18 @@ class Web extends Component {
   }
 }
 
+const RealStack = StackNavigator({
+  Real: { screen: Real }
+});
+
+const WebStack = StackNavigator({
+  Web: { screen: Web }
+});
+
 export default TabNavigator(
   {
-    Timeline: { screen: Real },
-    Web: { screen: Web },
+    Timeline: { screen: RealStack },
+    Web: { screen: WebStack },
   },
   {
     lazy: false,
