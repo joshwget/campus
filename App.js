@@ -8,11 +8,18 @@ console.disableYellowBox = true
 var socialNetworkJs = 'function getPosts(){for(var e=[],t=document.querySelectorAll(".story_body_container"),r=0;r<t.length;r++){var n=t[r],l=getPoster(n),i=getTime(n),o=getRecipient(n),u=n.parentElement.querySelector("footer"),a=getReactions(u),c=getCommentCount(u),g=getLike(u),s=getComment(u),f=n.childNodes[1].innerText;e.push({key:n.parentElement.id,poster:l,time:i,recipient:o,rawText:f,reactions:a,commentCount:c,like:g,comment:s})}return e}function getPoster(e){var t=e.querySelector("i").getAttribute("style").split("\'")[1];return t=(t=(t=t.replaceAll("\\\\3a ",":")).replaceAll("\\\\3d ","=")).replaceAll("\\\\26 ","&"),{name:e.querySelector("strong").innerText,pictureUrl:t}}function getTime(e){var t=e.querySelector("abbr");return t?t.innerText:null}function getRecipient(e){var t=e.querySelector("span");if(!t)return null;for(var r=t.querySelectorAll("a"),n=0;n<r.length;n++){var l=r[n];if(n==r.length-1){var i=l.getAttribute("href");if(i.startsWith("/groups/"))return{type:"group",name:l.innerText,url:i}}}return null}function getReactions(e){if(!e)return null;var t=getReactionBar(e);if(!t)return null;var r=t.querySelector("[data-sigil=reactions-sentence-container]");if(!r)return null;for(var n=[],l=r.querySelectorAll("u"),i=0;i<l.length;i++){var o=l[i];n.push(o.textContent)}var u=r.children[r.children.length-1];return u?{types:n,count:parseInt(u.textContent)}:null}function getCommentCount(e){if(!e)return null;var t=getReactionBar(e);if(!t)return null;var r=t.children[t.children.length-1];return r?parseInt(r.textContent):null}function getReactionBar(e){return e.querySelector("[data-sigil=reactions-bling-bar]")}function getLike(e){return getFooterItem(e,"Like")}function getComment(e){return getFooterItem(e,"Comment")}function getFooterItem(e,t){if(!e)return null;for(var r={},n=e.querySelectorAll("a"),l=0;l<n.length;l++){var i=n[l];if(i.innerText.includes(t)){r={id:i.getAttribute("id")};break}}return r}function onFeedChange(e){new MutationObserver(e).observe(document.querySelector("#MNewsFeed"),{childList:!0})}String.prototype.replaceAll=function(e,t){return this.split(e).join(t)};'
 var watchJs = 'var observer=new MutationObserver(function(e){window.postMessage("reload")});observer.observe(document.querySelector("#MNewsFeed"),{childList:!0});'
 
+var urls = [
+  "https://m.facebook.com/HallieLomax",
+  "https://m.facebook.com/joshwget",
+  "https://m.facebook.com/kelsey.endres"
+]
+
 class Controller {
   constructor() {
     this.setDataFunction = null;
     this.loadMoreFunction = null;
     this.loadMoreFunction = null;
+    this.navigateFunction = null;
   }
 
   setSetDataFunction(setDataFunction) {
@@ -42,6 +49,17 @@ class Controller {
   loadMore() {
     if (this.loadMoreFunction) {
       this.loadMoreFunction();
+    }
+  }
+
+  setNavigateFunction(navigateFunction) {
+    this.navigateFunction = navigateFunction
+  }
+
+  navigate(params) {
+    if (this.navigateFunction) {
+      console.log('$$')
+      this.navigateFunction(params)
     }
   }
 }
@@ -109,7 +127,10 @@ class Real extends Component {
   }
 
   onPressNextPage = () => {
-    this.props.navigation.navigate('Real', { url: 'x' })
+    //this.props.navigation.navigate('Real', { url: urls[this.getIndex()] })
+    setTimeout(function() {
+      controller.navigate({ url: urls[this.getIndex()] })
+    }.bind(this), 2000)
   }
 
   onPrint = () => {
@@ -214,11 +235,17 @@ class Web extends Component {
     this.onLoad = this.onLoad.bind(this);
     this.onMessage = this.onMessage.bind(this);
 
+    var that = this;
+
     controller.setReloadFunction(() => {
       this.onLoad()
     })
     controller.setLoadMoreFunction(() => {
       this.webview.injectJavaScript('window.scrollTo(0,document.body.scrollHeight)')
+    })
+    controller.setNavigateFunction((params) => {
+      console.log(that.props.navigation)
+      that.props.navigation.navigate('Web', params)
     })
   }
   onLoad() {
@@ -239,10 +266,26 @@ class Web extends Component {
       console.log(e)
     }
   }
+
+  getIndex = () => {
+    if (this.props.navigation.index) {
+      return this.props.navigation.index
+    }
+    return 0
+  }
+
+  onPressNextPage = () => {
+    //this.props.navigation.navigate('Web', { url: urls[this.getIndex()] })
+    controller.navigate({ url: urls[this.getIndex()] })
+  }
   render() {
     return (
       <View style={{ flex: 1 }}>
         <View style={{ height: 20 }} />
+        <Button
+          onPress={this.onPressNextPage}
+          title="Next Page"
+        />
         <WebView
           ref={ref => (this.webview = ref)}
           source={{ uri: 'https://m.facebook.com/' }}
