@@ -9,6 +9,15 @@ var socialNetworkJs = 'function getPosts(){for(var e=[],t=document.querySelector
 // TODO: no need for this, it's already in socialnetwork.js
 var watchJs = 'var observer=new MutationObserver(function(e){window.postMessage("reload")});observer.observe(document.querySelector("#MNewsFeed"),{childList:!0});'
 
+const reactionToEmoji = {
+  'Like': '👍',
+  'Love': '❤️',
+  'Haha': '😂',
+  'Wow': '😮',
+  'Sad': '😢',
+  'Angry': '😡'
+}
+
 const patchPostMessageFunction = function() {
   var originalPostMessage = window.postMessage;
 
@@ -139,30 +148,37 @@ class Real extends Component {
           data={this.state.data}
           renderItem={({ item }) => {
             const reactions = item.reactions ? (
-              <Text>{item.reactions.count} Reactions</Text>
-            ) : (
-              <Text></Text>
-            )
+              <Text>
+                {item.reactions.types.map(e => reactionToEmoji[e]).join('')} {item.reactions.count}
+              </Text>
+            ) : null
             const comments = item.commentCount ? (
               <Text>{item.commentCount} Comments</Text>
-            ) : (
-              <Text></Text>
-            )
+            ) : null
             const title = item.recipient ? (
               <Text>
-                <Text onPress={() => this.onPressNextPage(item.poster.url)}>
+                <Text
+                  onPress={() => this.onPressNextPage(item.poster.url)}
+                  style={{fontWeight: 'bold'}}
+                >
                   {item.poster.name}
                 </Text>
                 ▶
                 <Text>
-                  <Text onPress={() => this.onPressNextPage(item.recipient.url)}>
+                  <Text
+                    onPress={() => this.onPressNextPage(item.recipient.url)}
+                    style={{fontWeight: 'bold'}}
+                  >
                     {item.recipient.name}
                   </Text>
                 </Text>
               </Text>
             ) : (
               <Text>
-                <Text onPress={() => this.onPressNextPage(item.poster.url)}>
+                <Text
+                  onPress={() => this.onPressNextPage(item.poster.url)}
+                  style={{fontWeight: 'bold'}}
+                >
                   {item.poster.name}
                 </Text>
               </Text>
