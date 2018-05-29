@@ -148,14 +148,28 @@ class Real extends Component {
             ) : (
               <Text></Text>
             )
-            var title = item.poster.name
-            if (item.recipient) {
-              title += ' ▶ ' + item.recipient.name
-            }
-            var subtitle = ''
-            if (item.time) {
-              subtitle = item.time
-            }
+            const title = item.recipient ? (
+              <Text>
+                <Text onPress={() => this.onPressNextPage(item.poster.url)}>
+                  {item.poster.name}
+                </Text>
+                ▶
+                <Text>
+                  <Text onPress={() => this.onPressNextPage(item.recipient.url)}>
+                    {item.recipient.name}
+                  </Text>
+                </Text>
+              </Text>
+            ) : (
+              <Text>
+                <Text onPress={() => this.onPressNextPage(item.poster.url)}>
+                  {item.poster.name}
+                </Text>
+              </Text>
+            )
+            const subtitle = item.time ? (
+              <Text>{item.time}</Text>
+            ) : null
             return (
               <View style={{flex: 1, flexDirection: 'column'}}>
                 <ListItem
@@ -164,10 +178,8 @@ class Real extends Component {
                     source={item.poster.pictureUrl && {uri: item.poster.pictureUrl}}
                     onPress={() => this.onPressNextPage(item.poster.url)}
                   />}
-                  title={<Text
-                    onPress={() => this.onPressNextPage(item.poster.url)}
-                  >{title}</Text>}
-                  subtitle={`${subtitle}`}
+                  title={title}
+                  subtitle={subtitle}
                   containerStyle={{ borderBottomWidth: 0 }}
                   hideChevron={true}
                 />
