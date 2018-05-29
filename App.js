@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { AppRegistry, WebView, FlatList, StyleSheet, Text, View, ActivityIndicator, Button, Image } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-import { List, ListItem, SearchBar } from "react-native-elements";
+import { Avatar, List, ListItem, SearchBar } from "react-native-elements";
 
 console.disableYellowBox = true
 
@@ -159,10 +159,15 @@ class Real extends Component {
             return (
               <View style={{flex: 1, flexDirection: 'column'}}>
                 <ListItem
-                  roundAvatar
-                  title={`${title}`}
+                  avatar={<Avatar
+                    rounded
+                    source={item.poster.pictureUrl && {uri: item.poster.pictureUrl}}
+                    onPress={() => this.onPressNextPage(item.poster.url)}
+                  />}
+                  title={<Text
+                    onPress={() => this.onPressNextPage(item.poster.url)}
+                  >{title}</Text>}
                   subtitle={`${subtitle}`}
-                  avatar={{ uri: item.poster.pictureUrl }}
                   containerStyle={{ borderBottomWidth: 0 }}
                   hideChevron={true}
                 />
@@ -172,7 +177,7 @@ class Real extends Component {
                   {comments}
                 </View>
                 <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-around'}}>
-                  <Button title="Like" onPress={() => this.onPressNextPage(item.poster.url)}/>
+                  <Button title="Like"/>
                   <Button title="Comment"/>
                   <Button title="Share"/>
                 </View>
